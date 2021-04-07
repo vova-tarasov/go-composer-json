@@ -1,14 +1,14 @@
-dist: trusty
 language: go
 
 go:
   - 1.16.x
+  - tip
 
-os:
-  - linux
-
-before_script:
-  - go get -t ./...
+before_install:
+  - go get -t -v ./...
 
 script:
-  - go test ./
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
