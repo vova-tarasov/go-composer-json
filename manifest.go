@@ -45,15 +45,15 @@ type Manifest struct {
 	//Extra               TODO     `json:"extra,omitempty"` // Todo implement both map[string]interface{} and []interface{}
 }
 
-// Convert "string" or array of "strings" into []string
+// StringOrStrings convert "string" or array of "strings" into []string
 type StringOrStrings []string
 
-// Marshal JSON to an array of strings
+// MarshalJSON convert into an array of strings
 func (l StringOrStrings) MarshalJSON() ([]byte, error) {
 	return json.Marshal([]string(l))
 }
 
-// Convert string or array of strings into []string
+// UnmarshalJSON convert string or array of strings into []string
 func (l *StringOrStrings) UnmarshalJSON(bytes []byte) error {
 	var str string
 	if err := json.Unmarshal(bytes, &str); err == nil {
@@ -135,7 +135,8 @@ type Config struct {
 	PlatformCheck         BoolOrString      `json:"platform-check,omitempty"`
 }
 
-// Convert all possible variants of false
+// Bool convert string, integer or bool variations into a boolean
+//
 // Examples:
 //  { "value": 1 }
 //  { "value": "1" }
@@ -153,12 +154,12 @@ type Config struct {
 // into Go boolean type
 type Bool bool
 
-// Marshal JSON into a boolean
+// MarshalJSON json representation of a boolean
 func (b Bool) MarshalJSON() ([]byte, error) {
 	return json.Marshal(bool(b))
 }
 
-// Unmarshal JSON into a boolean
+// UnmarshalJSON converts any string, integer or boolean into a boolean
 func (b *Bool) UnmarshalJSON(bytes []byte) error {
 	switch string(bytes) {
 	case "true", "True", "\"true\"", "\"True\"", "1", "\"1\"":
@@ -171,7 +172,7 @@ func (b *Bool) UnmarshalJSON(bytes []byte) error {
 	return nil
 }
 
-// Convert string or map of strings into struct
+// ValueOrMap convert a string or a map of strings into struct
 // Example
 // "preferred-install": {
 //                    "type": ["string", "object"],
@@ -182,7 +183,7 @@ type ValueOrMap struct {
 	Map   map[string]string
 }
 
-// Marshal JSON into either a string or a string map
+// MarshalJSON convert into either a string or a string map
 func (pi ValueOrMap) MarshalJSON() ([]byte, error) {
 	if pi.Value != "" {
 		return json.Marshal(pi.Value)
@@ -190,7 +191,7 @@ func (pi ValueOrMap) MarshalJSON() ([]byte, error) {
 	return json.Marshal(pi.Map)
 }
 
-// Unmarshal string or map of strings into struct
+// UnmarshalJSON unmarshal string or map of strings into struct
 func (pi *ValueOrMap) UnmarshalJSON(bytes []byte) error {
 	if err := json.Unmarshal(bytes, &pi.Value); err == nil {
 		return nil
@@ -208,7 +209,7 @@ type HttpBasic map[string]struct {
 	Password string `json:"password,omitempty"`
 }
 
-// Convert Bool or String into structure
+// BoolOrString convert Bool or String into structure
 // Example
 // "discard-changes": {
 //                    "type": ["string", "boolean"],
@@ -219,7 +220,7 @@ type BoolOrString struct {
 	String string
 }
 
-// Marshal JSON into struct
+// MarshalJSON marshal JSON into struct
 func (bs BoolOrString) MarshalJSON() ([]byte, error) {
 	if bs.String != "" {
 		return json.Marshal(bs.String)
@@ -227,7 +228,7 @@ func (bs BoolOrString) MarshalJSON() ([]byte, error) {
 	return bs.Bool.MarshalJSON()
 }
 
-// Converts string or boolean into a custom structure to hold values separately
+// UnmarshalJSON convert string or boolean into a custom structure to hold values separately
 // If string value is empty, then boolean value is used
 func (bs *BoolOrString) UnmarshalJSON(bytes []byte) error {
 	if err := bs.Bool.UnmarshalJSON(bytes); err == nil {
@@ -239,7 +240,7 @@ func (bs *BoolOrString) UnmarshalJSON(bytes []byte) error {
 	return errors.New(fmt.Sprintf("cannot unmarshal %s", bytes))
 }
 
-// Convert integer or string into string
+// IntString convert integer or string into string
 // Example
 // "cache-files-maxsize": {
 //                    "type": ["string", "integer"],
@@ -247,12 +248,12 @@ func (bs *BoolOrString) UnmarshalJSON(bytes []byte) error {
 //                }
 type IntString string
 
-// Marshal JSON
+// MarshalJSON marshal JSON into string
 func (c IntString) MarshalJSON() ([]byte, error) {
 	return json.Marshal(string(c))
 }
 
-// Converts integer or string into string
+// UnmarshalJSON convert integer or string into string
 // Example JSON values: 300, "300", "300MiB"
 func (c *IntString) UnmarshalJSON(bytes []byte) error {
 	r := make([]byte, 0)
@@ -275,7 +276,7 @@ type Autoload struct {
 	ExcludeFromClassmap []string `json:"exclude-from-classmap,omitempty"`
 }
 
-// Converts a map or a map of arrays into a map of arrays
+// Psr convert a map or a map of arrays into a map of arrays
 // Example values
 // "psr-0": {
 //            "key1": "/string/value/",
@@ -286,12 +287,12 @@ type Autoload struct {
 //        }
 type Psr map[string][]string
 
-// Marshal JSON
+// MarshalJSON marshal JSON into a map of arrays
 func (p Psr) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string][]string(p))
 }
 
-// Converts a map or a map of arrays into a map of arrays
+// UnmarshalJSON convert a map or a map of arrays into a map of arrays
 // Example values
 // "psr-0": {
 //            "key1": "/string/value/",
@@ -335,7 +336,7 @@ type Archive struct {
 	Exclude []string `json:"exclude,omitempty"`
 }
 
-// Converts a map or an array into an array
+// Repositories convert a map or an array into an array
 // Example values
 // {
 //     "composer": {
@@ -350,12 +351,12 @@ type Archive struct {
 //  }]
 type Repositories []Repository
 
-// Marshal JSON
+// MarshalJSON marshal JSON into an array of structs
 func (p Repositories) MarshalJSON() ([]byte, error) {
 	return json.Marshal([]Repository(p))
 }
 
-// Converts a map or an array into an array
+// UnmarshalJSON convert a map or an array into an array
 // Example values
 // {
 //     "composer": {
